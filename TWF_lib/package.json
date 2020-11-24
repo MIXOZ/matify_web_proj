@@ -1,0 +1,8 @@
+{
+  "name": "TWF_lib",
+  "version": "1.0.0",
+  "dependencies": {
+    "pixi-scrollbox": "^2.2.0",
+    "svg-scroll": "^0.1.1"
+  }
+}

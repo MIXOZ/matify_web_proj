@@ -2,49 +2,6 @@ const app = new SVG().addTo('body').size(800, 600);
 app.viewbox(0, 0, 800, 600);
 app.rect(800, 600).fill('#1F1F1F');
 
-/*
-function recSizeChange(cont) {
-    for (let item of cont.children) {
-        if (item.isSprite) {
-            item.scale.x /= 1.4;
-            item.scale.y /= 1.4;
-        } else {
-            recSizeChange(item)
-        }
-    }
-}
-
-function Division(a, b, cont) {
-    b.y += a.height;
-    let line = new PIXI.Graphics();
-    line.lineStyle(6, 0xCCCCCC, 1);
-    line.moveTo(0, 0);
-    line.lineTo(Math.max(a.width, b.width), 0);
-    line.interactive = true;
-    line.buttonMode = true;
-    line.hitArea = new PIXI.Polygon([
-        line.x, line.y - line.height * 2,
-        line.x + line.width, line.y - line.height * 2,
-        line.x + line.width, line.y + line.height * 2,
-        line.x, line.y + line.height * 2,
-    ]);
-    line.y += a.height;
-    line
-        .on('pointerdown', (event) => onButtonDown(cont))
-        .on('pointerup', (event) => onButtonOver(cont))
-        .on('pointerover', (event) => onButtonOver(cont))
-        .on('pointerout', (event) => onButtonOut(cont));
-    a.x += (line.width - a.width) / 2;
-    b.x += (line.width - b.width) / 2;
-    cont.addChild(a);
-    cont.addChild(b);
-    cont.addChild(line);
-    cont.scale.x /= 1.4;
-    cont.scale.y /= 1.4;
-    cont.y -= cont.height / 2 - a.height / 2;
-}
-*/
-
 function MakeNode(node) {
     this.value = node.value;
     this.children = [];
