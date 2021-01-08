@@ -127,6 +127,7 @@ class ExpressionSubstitution(
         val right: ExpressionNode,
         val weight: Double = 1.0,
         val basedOnTaskContext: Boolean = false,
+        val code: String = "",
         val nameEn: String = "",
         val nameRu: String = "",
         val comparisonType: ComparisonType = ComparisonType.EQUAL,
@@ -212,7 +213,7 @@ class ExpressionSubstitution(
                     }
                 } else {
                     if (conditionNode.children.size < expressionNode.children.size ||
-                            (conditionNode.children.size != expressionNode.children.size && (conditionNode.functionStringDefinition?.function?.fieldZero == null ||
+                            (conditionNode.children.size != expressionNode.children.size && (conditionNode.functionStringDefinition?.function?.fieldAddZero == null ||
                                     conditionNode.functionStringDefinition?.function?.isCommutativeWithNullWeight != true || !matchJumbledAndNested)) ||
                             !conditionNode.isNodeValueEquals(expressionNode)) {
                         if (onlyCheckListFlag == null) {
@@ -254,15 +255,16 @@ class ExpressionSubstitution(
                                 isMatched = true
                                 break
                             }
-                            if (!isMatched && conditionNode.functionStringDefinition?.function?.fieldZero != null && conditionNode.children[i].nodeType == NodeType.VARIABLE) {
+                            if (!basedOnTaskContext && !isMatched && conditionNode.functionStringDefinition?.function?.fieldAddZero != null &&
+                                    conditionNode.children[i].nodeType == NodeType.VARIABLE && !conditionNode.children[i].isNumberValue()) {
                                 val varValue = substitutionInstance.getExprVar(conditionNode.children[i].value)
                                 if (varValue == null) {
                                     isMatched = true
                                     if (onlyCheckListFlag == null) {
-                                        substitutionInstance.putExprVar(conditionNode.children[i].value, ExpressionNode(NodeType.VARIABLE, conditionNode.functionStringDefinition!!.function.fieldZero!!))
+                                        substitutionInstance.putExprVar(conditionNode.children[i].value, ExpressionNode(NodeType.VARIABLE, conditionNode.functionStringDefinition!!.function.fieldAddZero!!))
                                     }
                                 } else {
-                                    if (varValue.isNodeSubtreeEquals(ExpressionNode(NodeType.VARIABLE, conditionNode.functionStringDefinition!!.function.fieldZero!!))) {
+                                    if (varValue.isNodeSubtreeEquals(ExpressionNode(NodeType.VARIABLE, conditionNode.functionStringDefinition!!.function.fieldAddZero!!))) {
                                         isMatched = true
                                     }
                                 }

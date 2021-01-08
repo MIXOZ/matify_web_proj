@@ -69,7 +69,7 @@ data class GradientDescentComparisonConfiguration(
 
         val ternarySearchLeftBorder: Double = 1e-9,
         val ternarySearchRightBorder: Double = 1e9,
-        val ternarySearchIterationCount: Int = 65,
+        val ternarySearchIterationCount: Int = 100,
 
         // coefs for ternary search borders formulas:
         //      m1 = (alpha * l + beta * r) / (alpha + beta)
@@ -78,7 +78,7 @@ data class GradientDescentComparisonConfiguration(
         // only alpha / beta matters,
         // the bigger this ratio the better algorithm works for expressions with bounded domain,
         // but more ternary search iterations is needed
-        val ternarySearchAlpha: Double = 2.5,
+        val ternarySearchAlpha: Double = 1.57,
         val ternarySearchBeta: Double = 1.0
 
 )

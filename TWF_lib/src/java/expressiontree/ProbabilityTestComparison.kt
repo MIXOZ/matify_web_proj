@@ -59,16 +59,28 @@ fun alwaysPositiveFunction(node: ExpressionNode) : Boolean {
 
 fun difference(left: ExpressionNode, right: ExpressionNode, compiledConfiguration: CompiledConfiguration) : ExpressionNode {
     val res = compiledConfiguration.createExpressionFunctionNode("+", -1)
-    res.addChild(left.clone())
+    if (left.value.isEmpty() && left.children.size == 1)
+        res.addChild(left.children[0].clone())
+    else
+        res.addChild(left.clone())
     res.addChild(compiledConfiguration.createExpressionFunctionNode("-", -1))
-    res.children.last().addChild(right.clone())
+    if (right.value.isEmpty() && right.children.size == 1)
+        res.children.last().addChild(right.children[0].clone())
+    else
+        res.children.last().addChild(right.clone())
     return res
 }
 
 fun ratio(num: ExpressionNode, den: ExpressionNode, compiledConfiguration: CompiledConfiguration) : ExpressionNode {
     val res = compiledConfiguration.createExpressionFunctionNode("/", -1)
-    res.addChild(num.clone())
-    res.addChild(den.clone())
+    if (num.value.isEmpty() && num.children.size == 1)
+        res.addChild(num.children[0].clone())
+    else
+        res.addChild(num.clone())
+    if (den.value.isEmpty() && den.children.size == 1)
+        res.addChild(den.children[0].clone())
+    else
+        res.addChild(den.clone())
     return res
 }
 
@@ -87,37 +99,41 @@ fun alwaysPositive(expression: ExpressionNode, compiledConfiguration: CompiledCo
 }
 
 fun gradientDescentComparison(
-        _left: ExpressionNode, // TODO: rename
-        _right: ExpressionNode,
+        l: ExpressionNode,
+        r: ExpressionNode,
         compiledConfiguration: CompiledConfiguration,
         comparisonType: ComparisonType,
         domain: DomainPointGenerator? = null
 ) : Boolean {
-    var left = _left.clone()
-    var right = _right.clone()
+    var left = l.clone()
+    var right = r.clone()
+    var findDomainAgain = false
     while (shouldTakeLog(left) && shouldTakeLog(right)) {
         left = getLog(left, compiledConfiguration)
         right = getLog(right, compiledConfiguration)
+        findDomainAgain = true
     }
+    val dom = if (domain == null || findDomainAgain) DomainPointGenerator(arrayListOf(left, right)) else domain
 
     val diff = when (comparisonType) {
         ComparisonType.LEFT_MORE, ComparisonType.LEFT_MORE_OR_EQUAL -> difference(left, right, compiledConfiguration)
         else -> difference(right, left, compiledConfiguration)
     }
-    val diffMinizer = OptimizerUtils(diff, compiledConfiguration = compiledConfiguration, domain = domain)
+
+    val diffMinizer = OptimizerUtils(diff, compiledConfiguration = compiledConfiguration, domain = dom)
     if (diffMinizer.canStart() && diffMinizer.run())
         return false
 
     val denominator = when (comparisonType) {
-        ComparisonType.LEFT_MORE, ComparisonType.LEFT_MORE_OR_EQUAL -> _right
-        else -> _left  // TODO: fix bug
+        ComparisonType.LEFT_MORE, ComparisonType.LEFT_MORE_OR_EQUAL -> right
+        else -> left
     }
     if (alwaysPositive(denominator, compiledConfiguration)) {
         val ratio = when (comparisonType) {
             ComparisonType.LEFT_MORE, ComparisonType.LEFT_MORE_OR_EQUAL -> ratio(left, right, compiledConfiguration)
             else -> ratio(right, left, compiledConfiguration)
         }
-        val ratioMinimizer = OptimizerUtils(ratio, compiledConfiguration = compiledConfiguration, domain = domain)
+        val ratioMinimizer = OptimizerUtils(ratio, compiledConfiguration = compiledConfiguration, domain = dom)
         if (ratioMinimizer.canStart() && ratioMinimizer.run(threshold = 1.0))
             return false
     }

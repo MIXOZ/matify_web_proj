@@ -20,12 +20,24 @@ font_size - желаемый размер шрифта
 
 let compiledConfiguration;
 let level;
-function MakeMenu(){}
 
-function init (_compiledConfiguration, _level, _MakeMenu) {
+function MakeMenu() {
+}
+
+let multiFlag = false;
+let multiArr = [];
+
+function changeMultipleFlag(x) {
+    multiFlag = x;
+    if (!x) multiArr = [];
+}
+
+function init(_compiledConfiguration, _level, _MakeMenu, _flag, _arr) {
     compiledConfiguration = _compiledConfiguration;
     level = _level;
     MakeMenu = _MakeMenu;
+    multiFlag = _flag;
+    multiArr = _arr;
 }
 
 function initTestingGround(test_expr, font_size) {
@@ -38,7 +50,7 @@ function initTestingGround(test_expr, font_size) {
     app.viewbox(0, 0, background_width, background_height);
     app.rect(background_width, background_height).fill(background_colour);
 
-    let NewTreeRoot = TWF_lib.api.structureStringToExpression_69c2cy$(test_expr);
+    let NewTreeRoot = TWF_lib.structureStringToExpression(test_expr);
     let expr = PrintTree(NewTreeRoot, font_size, app);
     expr.move(0, 100);
 }
@@ -46,7 +58,7 @@ function initTestingGround(test_expr, font_size) {
 function MakeNode(node, app) {
     this.value = node.value;
     this.children = [];
-    this.add = function(child_node) {
+    this.add = function (child_node) {
         this.children.push(child_node);
     }
     this.cont = app.group();
@@ -118,8 +130,8 @@ function PrintTree(TWF_v, init_font_size, app) {
         txt.leading(0.9);
         txt
             .on('mousedown', () => onButtonDown(cont, nodeId))
-            .on('mouseup mouseover', () => onButtonOver(cont))
-            .on('mouseout', () => onButtonOut(cont));
+            .on('mouseup mouseover', () => onButtonOver(cont, nodeId))
+            .on('mouseout', () => onButtonOut(cont, nodeId));
         return txt;
     }
 
@@ -169,7 +181,7 @@ function PrintTree(TWF_v, init_font_size, app) {
     }
 
     function recPrintTree(v, size) {
-        let vert_shift = - default_vert_shift_offset[min(size, max_size)];
+        let vert_shift = -default_vert_shift_offset[min(size, max_size)];
         let delta = 0;
         let cur_cont = v.cont;
 
@@ -192,7 +204,7 @@ function PrintTree(TWF_v, init_font_size, app) {
             v_draw(cur_cont, another_child, delta, another_shift, size + 1);
             another_child.y(first_child.y() - first_shift
                 - another_child.bbox().height
-                + pow_vert_offset * (size >=  2));
+                + pow_vert_offset * (size >= 2));
             let rect = cur_cont.group()
                 .rect(pow_hitbox_width[min(size, max_size - 1)],
                     pow_hitbox_height[min(size, max_size - 1)])
@@ -241,8 +253,8 @@ function PrintTree(TWF_v, init_font_size, app) {
             v_draw(cur_cont, another_child, delta, another_shift, size);
             another_child.y(tmp.y()
                 - combi_top_vert_offset[min(size, max_size)]);
-            if (another_child.y() + another_child.bbox().height > first_child.y()){
-                another_child.dy(- another_child.y()
+            if (another_child.y() + another_child.bbox().height > first_child.y()) {
+                another_child.dy(-another_child.y()
                     - another_child.bbox().height
                     + first_child.y());
             }
@@ -340,26 +352,28 @@ function PrintTree(TWF_v, init_font_size, app) {
             onButtonDown(item, nodeId, false);
         }
         if (f) {
-            let arr = (TWF_lib.api.findApplicableSubstitutionsInSelectedPlace_fe1uu9$(
-                TWF_lib.api.structureStringToExpression_69c2cy$(level),
-                [nodeId],
+            multiArr.push(nodeId)
+            let arr = (TWF_lib.findApplicableSubstitutionsInSelectedPlace(
+                TWF_lib.structureStringToExpression(level),
+                multiArr,
                 compiledConfiguration)).toArray();
             let new_arr = []
             for (let i = 0; i < arr.length; i++) {
+                if (arr[i].resultExpression.toString() === "To get application result use argument 'withReadyApplicationResult' = 'true'()") continue;
                 new_arr.push([arr[i].originalExpressionChangingPart.toString(), arr[i].resultExpressionChangingPart.toString()])
             }
-            MakeMenu(new_arr, arr, [nodeId]);
+            MakeMenu(new_arr, arr, multiArr);
         }
     }
 
-    function onButtonOver(con) {
+    function onButtonOver(con, nodeId) {
         con.animate(300, '<>').fill(mouse_over_text_colour);
         for (let item of con.children()) {
             onButtonOver(item);
         }
     }
 
-    function onButtonOut(con) {
+    function onButtonOut(con, nodeId) {
         con.animate(300, '<>').fill(default_text_colour);
         for (let item of con.children()) {
             onButtonOut(item);

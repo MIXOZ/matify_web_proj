@@ -6,11 +6,9 @@ import expressiontree.ExpressionNode
 import expressiontree.NodeType
 import expressiontree.buildDiffNode
 import expressiontree.diff
-import mainpoints.compiledConfigurationBySettings
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.sqrt
+
 
 data class CompressedNodeDouble(val func: String = "", var value: Double = 0.0) {
     var children = mutableListOf<CompressedNodeDouble>()

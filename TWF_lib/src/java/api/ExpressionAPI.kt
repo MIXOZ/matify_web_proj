@@ -12,11 +12,15 @@ import kotlin.math.sqrt
 
 
 fun normalizeExpressionToUsualForm(
-        expression: ExpressionNode
+        expression: ExpressionNode,
+        compiledConfiguration: CompiledConfiguration = CompiledConfiguration()
 ) {
     val topExpressionNode = expression.getTopNode()
     topExpressionNode.normalizeNullWeightCommutativeFunctions()
     topExpressionNode.reduceExtraSigns(setOf("+"), setOf("-"))
-    topExpressionNode.normilizeSubtructions(FunctionConfiguration())
+    topExpressionNode.normilizeSubtructions(compiledConfiguration.functionConfiguration)
+    topExpressionNode.normalizeParentLinks()
     topExpressionNode.computeNodeIdsAsNumbersInDirectTraversalAndDistancesToRoot()
+    topExpressionNode.normalizeFunctionStringDefinitions(compiledConfiguration.functionConfiguration)
+    topExpressionNode.computeIdentifier()
 }
