@@ -26,18 +26,23 @@ function MakeMenu() {
 
 let multiFlag = false;
 let multiArr = [];
+let multiArrCont = [];
 
 function changeMultipleFlag(x) {
     multiFlag = x;
-    if (!x) multiArr = [];
+    if (!x) {
+        multiArr = [];
+        multiArrCont = [];
+    }
 }
 
-function init(_compiledConfiguration, _level, _MakeMenu, _flag, _arr) {
+function init(_compiledConfiguration, _level, _MakeMenu, _flag) {
     compiledConfiguration = _compiledConfiguration;
     level = _level;
     MakeMenu = _MakeMenu;
     multiFlag = _flag;
-    multiArr = _arr;
+    multiArr = [];
+    multiArrCont = [];
 }
 
 function initTestingGround(test_expr, font_size) {
@@ -63,6 +68,7 @@ function MakeNode(node, app) {
     }
     this.cont = app.group();
     this.twfNode = node;
+    this.cont.addClass("uncolored");
 }
 
 function MakeTree(node, app) {
@@ -132,6 +138,7 @@ function PrintTree(TWF_v, init_font_size, app) {
             .on('mousedown', () => onButtonDown(cont, nodeId))
             .on('mouseup mouseover', () => onButtonOver(cont, nodeId))
             .on('mouseout', () => onButtonOut(cont, nodeId));
+        txt.addClass("uncolored");
         return txt;
     }
 
@@ -346,27 +353,63 @@ function PrintTree(TWF_v, init_font_size, app) {
         return [cur_cont, vert_shift];
     }
 
-    function onButtonDown(con, nodeId, f = true) {
-        con.animate(300, '<>').fill(mouse_down_text_colour);
-        for (let item of con.children()) {
-            onButtonDown(item, nodeId, false);
-        }
-        if (f) {
+    function onButtonDown(con, nodeId) {
+        //con.animate(300, '<>').fill(mouse_down_text_colour);
+
+        if (multiArr.indexOf(nodeId) != -1) {
+            recolor(multiArr.indexOf(nodeId));
+            multiArrCont.splice(multiArr.indexOf(nodeId), 1)
+            multiArr.splice(multiArr.indexOf(nodeId), 1)
+            changeColor(con, con.classes()[0], ["uncolored", default_text_colour]);
+        } else {
             multiArr.push(nodeId)
-            let arr = (TWF_lib.findApplicableSubstitutionsInSelectedPlace(
+            multiArrCont.push(con);
+            recolor(multiArr.indexOf(nodeId));
+            alert(con.classes())
+        }
+
+
+
+
+        let arr = []
+        if (multiArr.length !== 0) {
+            arr = (TWF_lib.findApplicableSubstitutionsInSelectedPlace(
                 TWF_lib.structureStringToExpression(level),
                 multiArr,
                 compiledConfiguration)).toArray();
-            let new_arr = []
-            for (let i = 0; i < arr.length; i++) {
-                if (arr[i].resultExpression.toString() === "To get application result use argument 'withReadyApplicationResult' = 'true'()") continue;
-                new_arr.push([arr[i].originalExpressionChangingPart.toString(), arr[i].resultExpressionChangingPart.toString()])
-            }
-            MakeMenu(new_arr, arr, multiArr);
+        }
+        let new_arr = []
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i].resultExpression.toString() === "To get application result use argument 'withReadyApplicationResult' = 'true'()") continue;
+            new_arr.push([arr[i].originalExpressionChangingPart.toString(), arr[i].resultExpressionChangingPart.toString()])
+        }
+        MakeMenu(new_arr, arr);
+    }
+
+    function getColor(id) {
+        return ["colored", "#ff0000"];
+    }
+
+    function recolor(index) {
+        for (let i = index; i < multiArr.length; ++i) {
+            changeColor(multiArrCont[i], multiArrCont[i].classes()[0], getColor(multiArr[i]));
+        }
+    }
+
+    function changeColor(con, fromClass, [toClass, toColor]) {
+        //  alert([con, fromClass, toClass, toColor]);
+        if (!con.hasClass(fromClass)) return;
+        con.animate(300, '<>').fill(toColor);
+        con.removeClass(fromClass);
+        con.addClass(toClass);
+        for (let item of con.children()) {
+            changeColor(item, fromClass, [toClass, toColor]);
         }
     }
 
     function onButtonOver(con, nodeId) {
+        if (con.hasClass("colored")) return;
+        alert(1)
         con.animate(300, '<>').fill(mouse_over_text_colour);
         for (let item of con.children()) {
             onButtonOver(item);
@@ -374,6 +417,7 @@ function PrintTree(TWF_v, init_font_size, app) {
     }
 
     function onButtonOut(con, nodeId) {
+        if (con.hasClass("colored")) return;
         con.animate(300, '<>').fill(default_text_colour);
         for (let item of con.children()) {
             onButtonOut(item);

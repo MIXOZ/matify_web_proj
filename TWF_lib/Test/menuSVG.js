@@ -82,7 +82,8 @@ function MakeMainMenu(levelsList) {
 function MakeMenuOfLevel(level, curLevel) {
 
     multiFlag = false
-    multiArr = []
+    multiArr = [];
+    multiArrCont = [];
     changeMultipleFlag(false);
 
     let app = new SVG().addTo('body').size(window.innerWidth, window.innerHeight);
@@ -161,14 +162,16 @@ function MakeMenuOfLevel(level, curLevel) {
         let szw = expr.bbox().width / (window.innerWidth - 200);
 
         if (szw > 1) {
-            szw = 100 / szw;
             expr.remove()
-            expr = PrintTree(NewTreeRoot, szw, app);
+            expr = PrintTree(NewTreeRoot,  100 / szw, app);
         }
+        if (szw > 1) {
+            szw = 100 / szw;
+        } else szw = 100;
 
         let szh = expr.bbox().height / (((window.innerHeight / 5 - 60) / 3 * 5) + 60);
         if (szh > 1) {
-            szh = 100 / szh;
+            szh = szw / szh;
             expr.remove()
             expr = PrintTree(NewTreeRoot, szh, app);
         }
@@ -187,7 +190,7 @@ function MakeMenuOfLevel(level, curLevel) {
     let contOfCont = cont.group()
 
 
-    function MakeMenu(listOfValues, arrSubs, idArr) {
+    function MakeMenu(listOfValues, arrSubs) {
         cont.size(width_cont, height_cont)
             .move(100, (window.innerHeight / 5 * 3))
             .rect(width_cont, height_cont)
@@ -274,21 +277,12 @@ function MakeMenuOfLevel(level, curLevel) {
 
 
         function onButtonDownButton1(con, f = false, index = -1) {
-            if (con.type === "text") return;
-            con.animate(300, '<>').fill('#ffbf00');
+            if (con.width() === width_inner_cont)
+                con.animate(300, '<>').fill('#ffbf00');
             for (let item of con.children()) {
                 onButtonDownButton1(item);
             }
             if (index !== -1) {
-                // alert([idArr,TWF_lib.api.findSubstitutionPlacesInExpression_333i8d$(TWF_lib.api.structureStringToExpression_69c2cy$(level), arrSubs[index].expressionSubstitution).toArray()[0]]);
-                // alert(arrSubs[index]);
-                // level = (TWF_lib.api.applySubstitutionInSelectedPlace_m5nb0p$(
-                //     TWF_lib.api.structureStringToExpression_69c2cy$(level),
-                //     idArr[0]/*TWF_lib.api.findSubstitutionPlacesInExpression_333i8d$(TWF_lib.api.structureStringToExpression_69c2cy$(level), arrSubs[index].expressionSubstitution)*/,
-                //     arrSubs[index].expressionSubstitution,
-                //     TWF_lib.api.createCompiledConfigurationFromExpressionSubstitutionsAndParams_aatmta$(
-                //         [TWF_lib.api.expressionSubstitutionFromStructureStrings_l8d3dq$(level, curLevel[1])]),
-                // )).toString()
                 level = arrSubs[index].resultExpression.toString();
                 if (level === curLevel[1]) {
                     cleanMenuOfLevel('win');
@@ -299,13 +293,30 @@ function MakeMenuOfLevel(level, curLevel) {
             if (f) cleanMenuOfLevel('main');
         }
 
+
+        function onButtonOverButton1(con) {
+            if (con.width() === width_inner_cont)
+                con.animate(300, '<>').fill('#874141');
+            for (let item of con.children()) {
+                onButtonOverButton1(item);
+            }
+        }
+
+        function onButtonOutButton1(con) {
+            if (con.width() === width_inner_cont)
+                con.animate(300, '<>').fill('#517d73');
+            for (let item of con.children()) {
+                onButtonOutButton1(item);
+            }
+        }
+
         function interactive_button_1(cont, f = false, index = -1) {
             let tmp = cont;
             tmp.css('cursor', 'pointer');
             tmp
                 .on('mousedown', () => onButtonDownButton1(cont, f, index))
-                .on('mouseup mouseover', () => onButtonOverButton(cont))
-                .on('mouseout', () => onButtonOutButton(cont));
+                .on('mouseup mouseover', () => onButtonOverButton1(cont))
+                .on('mouseout', () => onButtonOutButton1(cont));
             return tmp;
         }
     }
@@ -498,7 +509,6 @@ function MakeMenuOfLevel(level, curLevel) {
         if (f === 'exit') {
             multiFlag = false;
             changeMultipleFlag(false);
-            multipleArr = [];
             okButton.remove();
             makeButtonMultipleMenu();
             changeButtonMultipleMenu();
@@ -506,7 +516,6 @@ function MakeMenuOfLevel(level, curLevel) {
         if (f === 'ok') {
             if (multiArr.length === 0) {
                 changeMultipleFlag(true);
-                multipleArr = [];
                 return;
             }
         }
